@@ -52,7 +52,7 @@ $string['assignedpagetitle'] = 'Training manager role assigned';
 $string['assignedpageheading'] = 'Training manager role assigned';
 $string['assignedpagetitle'] = 'Training manager role assigned';
 $string['assignedpagedescription'] = 'You have been assigned the training manager role for the solution id {$a->solutionid}.<br> As a training manager you now have the ability to <a href="{$a->wwwroot}/blocks/importqueue/importusers.php">import new users</a> and enrol students in courses.';
-$string['block/kronostmrequest:notifyassignment'] = 'Training manager role assigned notification';
+$string['kronostmrequest:notifyassignment'] = 'Training manager role assigned notification';
 $string['defaultsubject'] = 'New training manager assigned';
 $string['roleassigned'] = 'The training manager role has been assigned to you.';
 $string['missingsolutionid'] = 'Your account is missing a solution id, please contact customer service';

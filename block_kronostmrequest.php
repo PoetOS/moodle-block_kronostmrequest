@@ -75,7 +75,11 @@ class block_kronostmrequest extends block_base {
 
         $this->content = new stdClass;
         $this->content->footer = '';
-        if (kronostmrequest_has_role($USER->id)) {
+
+        if (is_siteadmin($USER->id)) {
+            return $this->content;
+        }
+        if (kronostmrequest_has_role($USER->id) || !isloggedin()) {
             return $this->content;
         }
         if (isset($this->config->text)) {
