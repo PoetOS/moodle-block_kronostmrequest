@@ -17,7 +17,7 @@
 /**
  * Kronos training manager request block.
  *
- * @package    block_kronoshtml
+ * @package    block_kronostmrequest
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright  (C) 2015 Remote Learner.net Inc http://www.remote-learner.net
@@ -27,17 +27,59 @@ class block_kronostmrequest_edit_form extends block_edit_form {
      * Overridden from base class.  Add additional form elements to the block instance editing page.
      */
     protected function specific_definition($mform) {
-        global $CFG;
+        global $CFG, $DB;
 
-        $mform->addElement('text', 'config_title', get_string('configtitle', 'block_kronoshtml'));
+        $mform->addElement('text', 'config_title', get_string('configtitle', 'block_kronostmrequest'));
         $mform->setType('config_title', PARAM_TEXT);
         $mform->setDefault('config_title', get_string('newkronostmrequest', 'block_kronostmrequest'));
 
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $this->block->context);
-        $element = $mform->addElement('editor', 'config_text', get_string('configcontent', 'block_kronoshtml'), null, $editoroptions);
+        $element = $mform->addElement('editor', 'config_text', get_string('configcontent', 'block_kronostmrequest'), null, $editoroptions);
         // XSS is prevented when printing the block contents and serving files.
         $mform->setType('config_text', PARAM_RAW);
         $element->setValue(array('text' => get_string('newblockcontent', 'block_kronostmrequest', $CFG)));
+
+        // Standard user fields.
+        $fields = array(
+            'no_field_selected' => get_string('no_field_selected', 'block_kronostmrequest'),
+            'username' => get_user_field_name('username'),
+            'email' => get_user_field_name('email'),
+            'idnumber' => get_user_field_name('idnumber'),
+            'lastnamephonetic' => get_user_field_name('lastnamephonetic'),
+            'firstnamephonetic' => get_user_field_name('firstnamephonetic'),
+            'middlename' => get_user_field_name('middlename'),
+            'alternatename' => get_user_field_name('alternatename'),
+            'institution' => get_user_field_name('institution'),
+            'department' => get_user_field_name('department'),
+            'description' => get_user_field_name('description'),
+            'phone1' => get_user_field_name('phone1'),
+            'phone2' => get_user_field_name('phone2'),
+            'address' => get_user_field_name('address'),
+            'lang' => get_string('language'),
+            'theme' => get_user_field_name('theme'),
+            'timezone' => get_user_field_name('timezone'),
+            'url' => get_user_field_name('url'),
+            'icq' => get_user_field_name('icq'),
+            'skype' => get_user_field_name('skype'),
+            'aim' => get_user_field_name('aim'),
+            'yahoo' => get_user_field_name('yahoo'),
+            'msn' => get_user_field_name('msn'),
+        );
+
+        // Custom fields.
+        $customfields = $DB->get_records('user_info_field');
+        $options = array('context' => context_system::instance());
+        foreach ($customfields as $field) {
+            $fields['profile_field_'.$field->shortname] = format_string($field->name, true, $options);
+        }
+
+        $mform->addElement('select', 'config_restrictby', get_string('restrictby', 'block_kronostmrequest'), $fields);
+        $mform->setType('config_restrictby', PARAM_TEXT);
+        $mform->addHelpButton('config_restrictby', 'restrictby', 'block_kronostmrequest');
+
+        $mform->addElement('text', 'config_restrictbyvalue', get_string('restrictbyvalue', 'block_kronostmrequest'));
+        $mform->setType('config_restrictbyvalue', PARAM_TEXT);
+        $mform->addHelpButton('config_restrictbyvalue', 'restrictbyvalue', 'block_kronostmrequest');
     }
 
     /**
@@ -56,7 +98,7 @@ class block_kronostmrequest_edit_form extends block_edit_form {
                 $currenttext = $text;
             }
 
-            $text = file_prepare_draft_area($draftideditor, $this->block->context->id, 'block_kronoshtml', 'content', 0, array('subdirs' => true), $currenttext);
+            $text = file_prepare_draft_area($draftideditor, $this->block->context->id, 'block_kronostmrequest', 'content', 0, array('subdirs' => true), $currenttext);
             $defaults->config_text['text'] = $text;
             $defaults->config_text['itemid'] = $draftideditor;
             $defaults->config_text['format'] = $this->block->config->format;

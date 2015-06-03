@@ -42,6 +42,15 @@ class block_kronostmrequest extends block_base {
     }
 
     /**
+     * Allow instances to have their own configuration.
+     *
+     * @return boolean Return true to allow instances to have their own configuration.
+     */
+    public function instance_allow_config() {
+        return true;
+    }
+
+    /**
      * Overridden from parent class. Sets the formats.
      */
     public function applicable_formats() {
@@ -68,6 +77,21 @@ class block_kronostmrequest extends block_base {
     public function get_content() {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/kronostmrequest/lib.php');
+
+        // If restricted by is configured, check if the current user profile fields match.
+        if (!empty($this->config->restrictby) && !empty($this->config->restrictbyvalue)) {
+            // Load user record.
+            $record = $DB->get_record('user', array('id' => $USER->id));
+            // Load custom feilds.
+            profile_load_data($record);
+            $retrictby = $this->config->restrictby;
+            if (empty($record->$retrictby) || $record->$retrictby != $this->config->restrictbyvalue) {
+                $this->content = new stdClass;
+                $this->content->footer = '';
+                $this->config->text = '';
+                return $this->content;
+            }
+        }
 
         if ($this->content !== null) {
             return $this->content;
