@@ -41,7 +41,7 @@ class block_kronostmrequest_edit_form extends block_edit_form {
 
         // Standard user fields.
         $fields = array(
-            'no_field_selected' => get_string('no_field_selected', 'block_kronostmrequest'),
+            '' => get_string('no_field_selected', 'block_kronostmrequest'),
             'username' => get_user_field_name('username'),
             'email' => get_user_field_name('email'),
             'idnumber' => get_user_field_name('idnumber'),

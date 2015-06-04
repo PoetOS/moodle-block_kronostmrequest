@@ -78,14 +78,26 @@ class block_kronostmrequest extends block_base {
         global $CFG, $DB, $USER;
         require_once($CFG->dirroot.'/blocks/kronostmrequest/lib.php');
 
+        // Do not show block if user is not logged in.
+        if (!isloggedin()) {
+            return $this->content;
+        }
+
         // If restricted by is configured, check if the current user profile fields match.
-        if (!empty($this->config->restrictby) && !empty($this->config->restrictbyvalue)) {
+        if (!empty($this->config->restrictby)) {
             // Load user record.
             $record = $DB->get_record('user', array('id' => $USER->id));
             // Load custom feilds.
             profile_load_data($record);
             $retrictby = $this->config->restrictby;
-            if (empty($record->$retrictby) || $record->$retrictby != $this->config->restrictbyvalue) {
+            // Ensure the record and restrictbyvalue are set to allow the use of a blank value.
+            if (!isset($record->$retrictby)) {
+                $record->$retrictby = '';
+            }
+            if (!isset($this->config->restrictbyvalue)) {
+                $this->config->restrictbyvalue = '';
+            }
+            if ($record->$retrictby != $this->config->restrictbyvalue) {
                 $this->content = new stdClass;
                 $this->content->footer = '';
                 $this->config->text = '';
