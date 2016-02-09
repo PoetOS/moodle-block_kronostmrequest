@@ -367,3 +367,50 @@ function kronostmrequest_validate_role($userid) {
     // Valid configuration was not found.
     return "invalid";
 }
+
+/**
+ * Check if a training manager role can be assigned.
+ *
+ * @param int $userid User id of user to check role assignment.
+ * @return string "valid" when valid or "systemrole", "nousersolutionid", "nosolutionusersets", "morethanonesolutionuserset",
+ *                "solutionusersetroleassigned".
+ */
+function kronostmrequest_can_assign($userid) {
+    global $DB;
+    if (kronostmrequest_has_system_role($userid)) {
+        // There is a system role assigned.
+        return "systemrole";
+    }
+
+    // Retrieve solution id from custom user profile field.
+    $user = $DB->get_record('user', array('id' => $userid));
+    profile_load_data($user);
+    $solutionfield = "profile_field_".kronosportal_get_solutionfield();
+
+    if (empty($user->$solutionfield)) {
+        // There is no solution userset id, the configuration is invalid.
+        return "nousersolutionid";
+    }
+
+    $solutionid = $user->$solutionfield;
+    // Validate userset solution configuration.
+    $usersetsolutions = kronostmrequest_get_solution_usersets($solutionid);
+    if (empty($usersetsolutions)) {
+        // There is no valid userset solutions.
+        return "nosolutionusersets";
+    }
+
+    if (count($usersetsolutions) != 1) {
+        // There is more than one userset solution or none, this is an invalid configuration.
+        return "morethanonesolutionuserset";
+    }
+
+    // Retrieve what roles are assigned to training manager and solutions usersets.
+    $usersetsolutionroles = kronostmrequest_get_solution_usersets_roles($userid);
+    if (!empty($usersetsolutionroles)) {
+        // Invalid role assignment.
+        return "solutionusersetroleassigned";
+    }
+
+    return "valid";
+}

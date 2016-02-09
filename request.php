@@ -40,13 +40,9 @@ $PAGE->set_pagelayout('admin');
 $PAGE->set_title(get_string('requestpagetitle', 'block_kronostmrequest'));
 $PAGE->set_heading(get_string('requestpageheading', 'block_kronostmrequest'));
 
-require_login();
-
-if (kronostmrequest_has_role($USER->id)) {
-    // User is already assigned the training manager role.
-    echo $OUTPUT->header();
-    echo html_writer::tag('h3', get_string('roleassigned', 'block_kronostmrequest'));
-} else {
+$canassign = kronostmrequest_can_assign($USER->id);
+// If you cannot assign display an error.
+if ($canassign == "valid") {
     $requestform = new block_kronostmrequest_request_form($PAGE->url);
     if ($data = $requestform->get_data()) {
         if (empty($data->auth)) {
@@ -59,8 +55,16 @@ if (kronostmrequest_has_role($USER->id)) {
         } else {
             // User has confirmed they have authority to request training manager role.
             kronostmrequest_role_assign($USER->id);
-            kronostmrequest_send_notification($USER->id);
-            redirect($CFG->wwwroot.'/blocks/kronostmrequest/assigned.php');
+            $rolevalid = kronostmrequest_validate_role($USER->id);
+            if ($rolevalid == 'valid') {
+                kronostmrequest_send_notification($USER->id);
+                redirect($CFG->wwwroot.'/blocks/kronostmrequest/assigned.php');
+            } else {
+                echo $OUTPUT->header();
+                $data = new stdClass();
+                $data->wwwroot = $CFG->wwwroot;
+                echo html_writer::tag('h3', get_string('validation_error_'.$rolevalid, 'block_kronostmrequest', $data));
+            }
         }
     } else {
         echo $OUTPUT->header();
@@ -68,6 +72,17 @@ if (kronostmrequest_has_role($USER->id)) {
         echo html_writer::tag('p', get_string('requestroleinstructions', 'block_kronostmrequest'));
         $requestform->display();
     }
+} else {
+    // User is already assigned the training manager role.
+    $rolevalid = kronostmrequest_validate_role($USER->id);
+    if ($rolevalid == "valid") {
+        echo $OUTPUT->header();
+        echo html_writer::tag('h3', get_string('roleassigned', 'block_kronostmrequest'));
+    } else {
+        echo $OUTPUT->header();
+        $data = new stdClass();
+        $data->wwwroot = $CFG->wwwroot;
+        echo html_writer::tag('h3', get_string('canassign_error_'.$canassign, 'block_kronostmrequest', $data));
+    }
 }
 echo $OUTPUT->footer();
-

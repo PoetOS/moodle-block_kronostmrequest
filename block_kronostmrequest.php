@@ -115,9 +115,31 @@ class block_kronostmrequest extends block_base {
         if (is_siteadmin($USER->id)) {
             return $this->content;
         }
-        if (kronostmrequest_has_role($USER->id) || !isloggedin()) {
+        if (!isloggedin()) {
             return $this->content;
         }
+
+        // Check if the user currently has a valid training manager role assigned.
+        $rolevalid = kronostmrequest_validate_role($USER->id);
+        if ($rolevalid == "valid") {
+            return $this->content;
+        }
+
+        // Check if they can have a training manager role assigned to them.
+        $canassign = kronostmrequest_can_assign($USER->id);
+        // If you cannot assign display an error.
+        if ($canassign != "valid") {
+            $data = new stdClass();
+            $data->wwwroot = $CFG->wwwroot;
+            $this->content->text = get_string('canassign_error_'.$canassign, 'block_kronostmrequest', $data);
+            return $this->content;
+        }
+
+        // Double check role validation. If the user does not have a system role than they are not a training manager currently.
+        if (!in_array($rolevalid, array("nosystemrole", "invalid"))) {
+            return $this->content;
+        }
+
         if (isset($this->config->text)) {
             // Rewrite url.
             $this->config->text = file_rewrite_pluginfile_urls($this->config->text, 'pluginfile.php', $this->context->id, 'block_kronoshtml', 'content', null);
