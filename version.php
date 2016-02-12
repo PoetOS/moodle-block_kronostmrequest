@@ -27,7 +27,7 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');
 }
 
-$plugin->version = 2015022300;
+$plugin->version = 2015022301;
 $plugin->component = 'block_kronostmrequest';
 $plugin->release = 'Kronos training manager request';
 $plugin->requires = 2014051201.00;

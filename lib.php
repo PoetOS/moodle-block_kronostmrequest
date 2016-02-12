@@ -24,7 +24,7 @@ require_once($CFG->dirroot.'/auth/kronosportal/lib.php');
  * @package    block_kronostmrequest
  * @author     Remote-Learner.net Inc
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @copyright  (C) 2015 Remote Learner.net Inc http://www.remote-learner.net
+ * @copyright  (C) 2016 Remote Learner.net Inc http://www.remote-learner.net
  */
 
 /**
@@ -211,7 +211,9 @@ function kronostmrequest_assign_system_role($userid) {
  * @param int $userid User id of user to assign role to.
  */
 function kronostmrequest_unassign_all_roles($userid) {
-    kronostmrequest_unassign_system_role($userid);
+    if (kronostmrequest_has_system_role($userid)) {
+        kronostmrequest_unassign_system_role($userid);
+    }
     kronostmrequest_unassign_all_solutionuserset_roles($userid);
 }
 
@@ -413,4 +415,171 @@ function kronostmrequest_can_assign($userid) {
     }
 
     return "valid";
+}
+
+/**
+ * Unassign any invalid solution usersets, these solution usersets would be unassigned if it does not have a matching solution id
+ * to the solution id stored in the custom profile field.
+ *
+ * @param int $userid User id of user to check for invalid usersets.
+ * @return boolean True on successfully processing, false on error.
+ */
+function kronostmrequest_unassign_invalid_usersets($userid) {
+    global $DB;
+    // Retrieve solution id.
+    $user = $DB->get_record('user', array('id' => $userid));
+    if (empty($user)) {
+        return false;
+    }
+    profile_load_data($user);
+
+    $solutionfield = "profile_field_".kronosportal_get_solutionfield();
+
+    if (empty($user->$solutionfield)) {
+        // There is no solution userset id, the configuration is invalid.
+        kronostmrequest_unassign_all_roles($userid);
+        return false;
+    }
+
+    // Unassign usersets that are not valid.
+    $solutionid = $user->$solutionfield;
+    $usersetsolutions = kronostmrequest_get_solution_usersets($solutionid);
+    // No solution userset or more than one should result in no roles being assigned.
+    if (empty($usersetsolutions) || count($usersetsolutions) > 1) {
+        kronostmrequest_unassign_all_roles($userid);
+        return false;
+    }
+
+    // Check userset roles.
+    $userset = array_pop($usersetsolutions);
+    $usersetid = $userset->usersetid;
+    $usersetroles = kronostmrequest_get_solution_usersets_roles($userid);
+    foreach ($usersetroles as $role) {
+        if ($usersetid != $role->usersetid) {
+            kronostmrequest_unassign_userset_role($userid, $role->contextid);
+        }
+    }
+    return true;
+}
+
+
+/**
+ * Handler for role unassign to validate training manager roles.
+ *
+ * @param object $eventdata Event data.
+ * @return boolean True on event handled successfully.
+ */
+function kronostmrequest_notify_role_unassigned_handler($eventdata) {
+    if (defined('KRONOS_PHPUNIT_SCRIPT') && KRONOS_PHPUNIT_SCRIPT) {
+        return true;
+    }
+
+    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) && method_exists($eventdata, 'trigger')) {
+        $eventdata = (object)$eventdata->other;
+    }
+
+    $userid = $eventdata->relateduserid;
+    $roleid = $eventdata->objectid;
+
+    $systemrole = get_config('block_kronostmrequest', 'systemrole');
+    $usersetrole = get_config('block_kronostmrequest', 'usersetrole');
+
+    // Ignore all othe roles.
+    if (!in_array($roleid, array($systemrole, $usersetrole))) {
+        return true;
+    }
+
+    // If unassigning system role than all the training manager roles are unassigned.
+    if ($eventdata->objectid == $systemrole) {
+        kronostmrequest_unassign_all_roles($eventdata->relateduserid);
+        return true;
+    }
+
+    // Unassign up any invalid usersets.
+    if (!kronostmrequest_unassign_invalid_usersets($eventdata->relateduserid)) {
+        // There was an issue with the configuration, unassign all.
+        kronostmrequest_unassign_all_roles($eventdata->relateduserid);
+        return true;
+    }
+    // Has a role, validate.
+    if (kronostmrequest_has_system_role($userid) && kronostmrequest_validate_role($userid) != 'valid') {
+        // Configuration is invalid, unassign all roles.
+        kronostmrequest_unassign_all_roles($userid);
+    }
+    return true;
+}
+
+/**
+ * Handler for profile update to validate training manager roles.
+ *
+ * @param object $eventdata Event data.
+ * @return boolean True on event handled successfully.
+ */
+function kronostmrequest_notify_user_updated_handler($eventdata) {
+    if (defined('KRONOS_PHPUNIT_SCRIPT') && KRONOS_PHPUNIT_SCRIPT) {
+        return true;
+    }
+    $userid = $eventdata->objectid;
+    $roles = kronostmrequest_get_solution_usersets_roles($userid);
+    // Check if user has system or userset role, if so they may be a training manager.
+    if (!(kronostmrequest_has_system_role($userid) || !empty($roles))) {
+        // Not a training manager.
+        return true;
+    }
+
+    // Has a role, validate.
+    if (kronostmrequest_validate_role($userid) != 'valid') {
+        // Configuration is invalid, unassign all roles.
+        kronostmrequest_unassign_all_roles($userid);
+    }
+    return true;
+}
+
+/**
+ * Handler for role assign to validate training manager roles.
+ * If a system role is being assigned, ensure any usersets that are assigned are valid.
+ * If a userset role is being assigned, use full validation check.
+ * The order of this check is dictated by kronostmrequest_role_assign, an event for the system role will be
+ * fired before the userset role is assigned.
+ *
+ * @param object $eventdata Event data.
+ * @return boolean True on event handled successfully.
+ */
+function kronostmrequest_notify_role_assigned_handler($eventdata) {
+    global $DB;
+    if (defined('KRONOS_PHPUNIT_SCRIPT') && KRONOS_PHPUNIT_SCRIPT) {
+        return true;
+    }
+
+    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) && method_exists($eventdata, 'trigger')) {
+        $eventdata = (object)$eventdata->other;
+    }
+
+    $systemrole = get_config('block_kronostmrequest', 'systemrole');
+    $usersetrole = get_config('block_kronostmrequest', 'usersetrole');
+    $userid = $eventdata->relateduserid;
+
+    if ($eventdata->objectid == $systemrole || $eventdata->objectid == $usersetrole) {
+        // Unassign up any invalid usersets.
+        if (!kronostmrequest_unassign_invalid_usersets($eventdata->relateduserid)) {
+            // There was an issue with the configuration, unassign all.
+            kronostmrequest_unassign_all_roles($eventdata->relateduserid);
+            return true;
+        }
+    }
+
+    // If system role is being assigned than the training manager role may not be complete yet.
+    if ($eventdata->objectid == $systemrole) {
+        return true;
+    }
+
+    // If a userset role is being checked than the training manager configuration should be complete.
+    if ($eventdata->objectid == $usersetrole) {
+        // If attempts to clean up invalid solution userset role assigments have failed to create a valid assigment, unassign all roles.
+        if (kronostmrequest_validate_role($userid) != 'valid') {
+            // Configuration is invalid, unassign all roles.
+            kronostmrequest_unassign_all_roles($userid);
+        }
+    }
+    return true;
 }
