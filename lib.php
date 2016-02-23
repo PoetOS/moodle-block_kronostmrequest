@@ -379,6 +379,10 @@ function kronostmrequest_validate_role($userid) {
  */
 function kronostmrequest_can_assign($userid) {
     global $DB;
+    if (isguestuser($userid)) {
+        // User is a guest user.
+        return "guestuser";
+    }
     if (kronostmrequest_has_system_role($userid)) {
         // There is a system role assigned.
         return "systemrole";

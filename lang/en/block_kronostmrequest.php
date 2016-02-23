@@ -72,3 +72,4 @@ $string['canassign_error_nousersolutionid'] = 'There is a problem with your conf
 $string['canassign_error_nosolutionusersets'] = 'There is a problem with your configuration: No solution userset is found';
 $string['canassign_error_morethanonesolutionuserset'] = 'There is a problem with your configuration: More than one solution userset has been found';
 $string['canassign_error_solutionusersetroleassigned'] = 'There is a problem with your configuration: A solution userset role is currently assigned';
+$string['canassign_error_guestuser'] = 'Guest users cannot request a training manager role';
