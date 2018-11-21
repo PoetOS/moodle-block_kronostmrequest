@@ -31,6 +31,8 @@ require_once(dirname(__FILE__).'/testlib.php');
 
 /**
  * Test kronostmrequest assignment functions.
+ *
+ * @group block_kronostmrequest
  */
 class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
     /**
@@ -366,8 +368,8 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
         set_config('usersetrole', $this->usersetroleid, 'block_kronostmrequest');
         $this->setcustomfielddata('customerid', $this->user->id, 'othersolutionid');
         $this->assertEquals("nosolutionusersets", kronostmrequest_can_assign($this->user->id));
-        $this->create_solution_userset('testsolutionid name new', 'othersolutionid');
-        $this->create_solution_userset('testsolutionid name new', 'othersolutionid');
+        $this->create_solution_userset('testsolutionid name new 1', 'othersolutionid');
+        $this->create_solution_userset('testsolutionid name new 2', 'othersolutionid');
         $this->assertEquals("morethanonesolutionuserset", kronostmrequest_can_assign($this->user->id));
     }
 

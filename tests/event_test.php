@@ -31,6 +31,9 @@ require_once(dirname(__FILE__).'/testlib.php');
 
 /**
  * Test kronostmrequest assignment functions.
+ *
+ * @group block_kronostmrequest
+ *
  */
 class block_kronostmrequest_event_testcase extends block_kronostmrequest_test {
     /**

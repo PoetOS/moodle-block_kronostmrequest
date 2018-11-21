@@ -27,6 +27,8 @@ defined('MOODLE_INTERNAL') || die();
 
 /**
  * Test kronostmrequest assignment functions.
+ *
+ * @group block_kronostmrequest
  */
 abstract class block_kronostmrequest_test extends advanced_testcase {
 
