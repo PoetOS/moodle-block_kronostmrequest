@@ -27,11 +27,11 @@ if (!defined('MOODLE_INTERNAL')) {
     die('Direct access to this script is forbidden.');
 }
 
-$plugin->version = 2015022301;
+$plugin->version = 2018110100;
 $plugin->component = 'block_kronostmrequest';
-$plugin->release = 'Kronos training manager request';
+$plugin->release = 'Kronos training manager request - 3.5.0 Beta';
 $plugin->requires = 2014051201.00;
-$plugin->maturity = MATURITY_STABLE;
+$plugin->maturity = MATURITY_BETA;
 $plugin->dependencies = array(
     'local_elisprogram' => 2014082500,
     'auth_kronosportal' => 2015012800
