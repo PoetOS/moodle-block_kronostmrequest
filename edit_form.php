@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Kronos training manager request block.
  *
@@ -34,7 +36,8 @@ class block_kronostmrequest_edit_form extends block_edit_form {
         $mform->setDefault('config_title', get_string('newkronostmrequest', 'block_kronostmrequest'));
 
         $editoroptions = array('maxfiles' => EDITOR_UNLIMITED_FILES, 'noclean' => true, 'context' => $this->block->context);
-        $element = $mform->addElement('editor', 'config_text', get_string('configcontent', 'block_kronostmrequest'), null, $editoroptions);
+        $element = $mform->addElement('editor', 'config_text', get_string('configcontent', 'block_kronostmrequest'),
+            null, $editoroptions);
         // XSS is prevented when printing the block contents and serving files.
         $mform->setType('config_text', PARAM_RAW);
         $element->setValue(array('text' => get_string('newblockcontent', 'block_kronostmrequest', $CFG)));
@@ -98,7 +101,8 @@ class block_kronostmrequest_edit_form extends block_edit_form {
                 $currenttext = $text;
             }
 
-            $text = file_prepare_draft_area($draftideditor, $this->block->context->id, 'block_kronostmrequest', 'content', 0, array('subdirs' => true), $currenttext);
+            $text = file_prepare_draft_area($draftideditor, $this->block->context->id, 'block_kronostmrequest', 'content', 0,
+                array('subdirs' => true), $currenttext);
             $defaults->config_text['text'] = $text;
             $defaults->config_text['itemid'] = $draftideditor;
             $defaults->config_text['format'] = $this->block->config->format;

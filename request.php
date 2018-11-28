@@ -50,7 +50,8 @@ if ($canassign == "valid") {
             echo $OUTPUT->header();
             echo html_writer::tag('h3', get_string('requestrole', 'block_kronostmrequest'));
             echo html_writer::tag('p', get_string('requestroleinstructions', 'block_kronostmrequest'));
-            echo html_writer::tag('p', get_string('requestroleinstructionsconfirm', 'block_kronostmrequest'), array('style' => 'color: red'));
+            echo html_writer::tag('p', get_string('requestroleinstructionsconfirm', 'block_kronostmrequest'),
+                array('style' => 'color: red'));
             $requestform->display();
         } else {
             // User has confirmed they have authority to request training manager role.

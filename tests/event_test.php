@@ -63,7 +63,6 @@ class block_kronostmrequest_event_testcase extends block_kronostmrequest_test {
      * Test only assigning userset role, event handler should auto remove userset role due to missing system role.
      */
     public function test_has_userset_role() {
-        global $DB;
         $this->assertFalse(kronostmrequest_has_userset_role($this->user->id));
         $auth = get_auth_plugin('kronosportal');
         $contextidname = $auth->userset_solutionid_exists('testsolutionid');
@@ -113,8 +112,8 @@ class block_kronostmrequest_event_testcase extends block_kronostmrequest_test {
      */
     public function test_userset_auto_unassign_invalid_userset() {
         $this->assertTrue(kronostmrequest_role_assign($this->user->id));
-        $usersetsolutions = kronostmrequest_get_solution_usersets_roles($this->user->id);
-        $newsolution = $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
+        kronostmrequest_get_solution_usersets_roles($this->user->id);
+        $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
         $auth = get_auth_plugin('kronosportal');
         $contextidname = $auth->userset_solutionid_exists('testsolutionidnew');
         $context = context::instance_by_id($contextidname->id);

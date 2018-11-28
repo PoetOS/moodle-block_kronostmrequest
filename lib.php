@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 require_once($CFG->libdir.'/accesslib.php');
 require_once($CFG->dirroot.'/auth/kronosportal/auth.php');
 require_once($CFG->dirroot.'/auth/kronosportal/lib.php');
@@ -478,7 +480,8 @@ function kronostmrequest_notify_role_unassigned_handler($eventdata) {
         return true;
     }
 
-    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) && method_exists($eventdata, 'trigger')) {
+    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) &&
+        method_exists($eventdata, 'trigger')) {
         $eventdata = (object)$eventdata->other;
     }
 
@@ -550,12 +553,12 @@ function kronostmrequest_notify_user_updated_handler($eventdata) {
  * @return boolean True on event handled successfully.
  */
 function kronostmrequest_notify_role_assigned_handler($eventdata) {
-    global $DB;
     if (defined('KRONOS_PHPUNIT_SCRIPT') && KRONOS_PHPUNIT_SCRIPT) {
         return true;
     }
 
-    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) && method_exists($eventdata, 'trigger')) {
+    if ((empty($eventdata->relateduserid) || empty($eventdata->contextid) || empty($eventdata->objectid)) &&
+        method_exists($eventdata, 'trigger')) {
         $eventdata = (object)$eventdata->other;
     }
 
@@ -579,7 +582,8 @@ function kronostmrequest_notify_role_assigned_handler($eventdata) {
 
     // If a userset role is being checked than the training manager configuration should be complete.
     if ($eventdata->objectid == $usersetrole) {
-        // If attempts to clean up invalid solution userset role assigments have failed to create a valid assigment, unassign all roles.
+        // If attempts to clean up invalid solution userset role assigments have failed to create a valid assigment,
+        // unassign all roles.
         if (kronostmrequest_validate_role($userid) != 'valid') {
             // Configuration is invalid, unassign all roles.
             kronostmrequest_unassign_all_roles($userid);

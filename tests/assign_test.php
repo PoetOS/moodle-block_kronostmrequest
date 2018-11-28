@@ -52,7 +52,6 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
      * Test has userset role.
      */
     public function test_has_userset_role() {
-        global $DB;
         $this->assertFalse(kronostmrequest_has_userset_role($this->user->id));
         $auth = get_auth_plugin('kronosportal');
         $contextidname = $auth->userset_solutionid_exists('testsolutionid');
@@ -165,7 +164,6 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
     public function test_kronostmrequest_unassign_userset_role() {
         set_config('systemrole', $this->roleid, 'block_kronostmrequest');
         set_config('usersetrole', $this->usersetroleid, 'block_kronostmrequest');
-        $auth = get_auth_plugin('kronosportal');
         $this->assertTrue(kronostmrequest_role_assign($this->user->id));
         $usersetsolution = kronostmrequest_get_solution_usersets_roles($this->user->id);
         $this->assertCount(1, $usersetsolution);
@@ -182,7 +180,6 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
     public function test_kronostmrequest_unassign_all_roles() {
         set_config('systemrole', $this->roleid, 'block_kronostmrequest');
         set_config('usersetrole', $this->usersetroleid, 'block_kronostmrequest');
-        $auth = get_auth_plugin('kronosportal');
         $this->assertTrue(kronostmrequest_role_assign($this->user->id));
         $this->assertTrue(kronostmrequest_has_system_role($this->user->id));
         // Assert system role is unassgined.
@@ -267,7 +264,8 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
     }
 
     /**
-     * Test test_kronostmrequest_validate_role with user with no solution usersets. Moving user from one solution id to a non existant.
+     * Test test_kronostmrequest_validate_role with user with no solution usersets.
+     * Moving user from one solution id to a non existant.
      */
     public function test_kronostmrequest_validate_role_nosolutionusersets() {
         set_config('systemrole', $this->roleid, 'block_kronostmrequest');
@@ -288,7 +286,7 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
     public function test_kronostmrequest_validate_role_nosolutionusersets_valid() {
         set_config('systemrole', $this->roleid, 'block_kronostmrequest');
         set_config('usersetrole', $this->usersetroleid, 'block_kronostmrequest');
-        $newsolution = $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
+        $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
         $this->assertTrue(kronostmrequest_role_assign($this->user->id));
         $this->assertEquals("valid", kronostmrequest_validate_role($this->user->id));
         $this->setcustomfielddata('customerid', $this->user->id, 'testsolutionidnew');
@@ -383,7 +381,7 @@ class block_kronostmrequest_assign_testcase extends block_kronostmrequest_test {
         $auth = get_auth_plugin('kronosportal');
         // Test training manager role can be assigned.
         $this->assertEquals("valid", kronostmrequest_can_assign($this->user->id));
-        $newsolution = $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
+        $this->create_solution_userset('testsolutionid name new', 'testsolutionidnew');
         $contextidname = $auth->userset_solutionid_exists('testsolutionidnew');
         $context = context::instance_by_id($contextidname->id);
         $usersetroleid = get_config('block_kronostmrequest', 'usersetrole');

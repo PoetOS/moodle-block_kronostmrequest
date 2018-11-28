@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+defined('MOODLE_INTERNAL') || die();
+
 /**
  * Kronos training manager request block.
  *
@@ -61,7 +63,8 @@ class block_kronostmrequest extends block_base {
      * Overridden from parent class. This game sets the formats.
      */
     public function specialization() {
-        $this->title = isset($this->config->title) ? format_string($this->config->title) : format_string(get_string('newkronostmrequest', $this->blockname));
+        $this->title = isset($this->config->title) ? format_string($this->config->title) : format_string(
+            get_string('newkronostmrequest', $this->blockname));
     }
 
     /**
@@ -142,7 +145,8 @@ class block_kronostmrequest extends block_base {
 
         if (isset($this->config->text)) {
             // Rewrite url.
-            $this->config->text = file_rewrite_pluginfile_urls($this->config->text, 'pluginfile.php', $this->context->id, 'block_kronoshtml', 'content', null);
+            $this->config->text = file_rewrite_pluginfile_urls($this->config->text, 'pluginfile.php', $this->context->id,
+                'block_kronoshtml', 'content', null);
             // Default to FORMAT_HTML which is what will have been used before the editor was properly implemented for the block.
             $format = FORMAT_HTML;
             // Check to see if the format has been properly set on the config.
@@ -164,11 +168,10 @@ class block_kronostmrequest extends block_base {
      * Overridden from parent class.  Serialize and store config data
      */
     public function instance_config_save($data, $nolongerused = false) {
-        global $DB;
-
         $config = clone($data);
         // Move embedded files into a proper filearea and adjust HTML links to match.
-        $config->text = file_save_draft_area_files($data->text['itemid'], $this->context->id, 'block_html', 'content', 0, array('subdirs' => true), $data->text['text']);
+        $config->text = file_save_draft_area_files($data->text['itemid'], $this->context->id, 'block_html', 'content', 0,
+            array('subdirs' => true), $data->text['text']);
         $config->format = $data->text['format'];
 
         parent::instance_config_save($config, $nolongerused);
@@ -178,7 +181,6 @@ class block_kronostmrequest extends block_base {
      * Overridden from parent class.  Delete file area.
      */
     public function instance_delete() {
-        global $DB;
         $fs = get_file_storage();
         $fs->delete_area_files($this->context->id, 'block_html');
         return true;
